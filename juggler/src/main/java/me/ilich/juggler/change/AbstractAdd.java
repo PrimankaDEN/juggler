@@ -19,7 +19,7 @@ import me.ilich.juggler.gui.JugglerFragment;
 import me.ilich.juggler.states.State;
 import me.ilich.juggler.states.TargetBound;
 
-public abstract class AbstractAdd implements Add.Interface {
+public abstract class AbstractAdd implements Change {
 
     private final State newState;
     private final String tag;
@@ -32,11 +32,11 @@ public abstract class AbstractAdd implements Add.Interface {
     }
 
     @Override
-    public Item add(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle bundle) {
+    public Item change(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle bundle) {
         int newLayoutId = newState.getGrid().getLayoutId();
         if (activity.getJuggler().hasLayoutId()) {
             if (newLayoutId != activity.getJuggler().getLayoutId()) {
-                throw new RuntimeException("Cant add state to activity with different layout id");
+                throw new RuntimeException("Cant change state to activity with different layout id");
             }
         } else {
             activity.getJuggler().setLayoutId(newLayoutId);
@@ -81,7 +81,7 @@ public abstract class AbstractAdd implements Add.Interface {
                     // если нет - не работае навигация через up, пропадает навигейшен вью
 
                     fragmentTransaction.remove(fragment);
-                    //ft.remove(fragment);
+                    //ft.change(fragment);
                 }
                 //ft.commit();
                 //fragmentManager.executePendingTransactions();

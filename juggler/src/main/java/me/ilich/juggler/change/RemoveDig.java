@@ -7,7 +7,7 @@ import java.util.Stack;
 import me.ilich.juggler.Juggler;
 import me.ilich.juggler.gui.JugglerActivity;
 
-class RemoveDig implements Remove.Interface {
+class RemoveDig implements Change {
 
     private final String tag;
 
@@ -16,7 +16,7 @@ class RemoveDig implements Remove.Interface {
     }
 
     @Override
-    public Item remove(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
+    public Item change(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
         Item newItem = null;
         if (!items.isEmpty()) {
             Item oldItem = items.peek();

@@ -41,7 +41,7 @@ public class ProfileExitFragment extends JugglerFragment {
         view.findViewById(R.id.dig_prev_activity).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CrossActivity.getInstance().addRemove(Remove.dig(MainState.TAG));
+                CrossActivity.getInstance().add(Remove.dig(MainState.TAG));
                 navigateTo().state(Remove.closeCurrentActivity());
             }
         });

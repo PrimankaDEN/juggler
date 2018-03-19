@@ -9,39 +9,31 @@ import me.ilich.juggler.gui.JugglerActivity;
 
 public final class Remove {
 
-    public static Remove.Interface none() {
+    public static Change none() {
         return new RemoveNone();
     }
 
-    public static Remove.Interface all() {
+    public static Change all() {
         return new RemoveAll();
     }
 
-    public static Remove.Interface dig(String tag) {
+    public static Change dig(String tag) {
         return new RemoveDig(tag);
     }
 
-    public static Remove.Interface last() {
+    public static Change last() {
         return new RemoveLast();
     }
 
-    public static Remove.Interface closeCurrentActivity() {
+    public static Change closeCurrentActivity() {
         return new RemoveCloseCurrentActivity();
     }
 
-    public static Remove.Interface closeAllActivities() {
+    public static Change closeAllActivities() {
         return new RemoveCloseAllActivities();
     }
 
     private Remove() {
 
     }
-
-    public interface Interface {
-
-        Item remove(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data);
-
-    }
-
-
 }

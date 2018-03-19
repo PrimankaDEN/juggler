@@ -7,11 +7,17 @@ import java.util.Stack;
 import me.ilich.juggler.Juggler;
 import me.ilich.juggler.gui.JugglerActivity;
 
-public class RemoveCloseCurrentActivity implements Remove.Interface {
+import static me.ilich.juggler.Juggler.DATA_ANIMATION_FINISH_ENTER;
+import static me.ilich.juggler.Juggler.DATA_ANIMATION_FINISH_EXIT;
+
+public class RemoveCloseCurrentActivity implements Change {
 
     @Override
-    public Item remove(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
-        data.putBoolean(Juggler.DATA_CLOSE_CURRENT_ACTIVITY, true);
+    public Item change(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle bundle) {
+        int finishEnterAnimation = bundle.getInt(DATA_ANIMATION_FINISH_ENTER, 0);
+        int finishExitAnimation = bundle.getInt(DATA_ANIMATION_FINISH_EXIT, 0);
+        activity.finish();
+        activity.overridePendingTransition(finishEnterAnimation, finishExitAnimation);
         return null;
     }
 

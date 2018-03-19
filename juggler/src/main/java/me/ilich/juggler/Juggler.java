@@ -1,9 +1,9 @@
 package me.ilich.juggler;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.Fragment;
@@ -11,10 +11,8 @@ import android.support.v4.app.FragmentManager;
 
 import java.io.Serializable;
 
-import me.ilich.juggler.change.Add;
+import me.ilich.juggler.change.Change;
 import me.ilich.juggler.change.Item;
-import me.ilich.juggler.change.NewActivityAdd;
-import me.ilich.juggler.change.Remove;
 import me.ilich.juggler.change.StateChanger;
 import me.ilich.juggler.grid.Cell;
 import me.ilich.juggler.gui.JugglerActivity;
@@ -27,14 +25,9 @@ public class Juggler implements Navigable, Serializable {
 
     public static final String TAG = "Juggler";
 
-    public static final String DATA_NEW_ACTIVITY_INTENT = "new_activity_intent";
-    public static final String DATA_CLOSE_CURRENT_ACTIVITY = "close_current_activity";
-    public static final String DATA_ANIMATION_START_ENTER = "animation start enter";
-    public static final String DATA_ANIMATION_START_EXIT = "animation start exit";
+    public static final String DATA_INTENT_FLAG = "intent flag extra";
     public static final String DATA_ANIMATION_FINISH_ENTER = "animation finish enter";
     public static final String DATA_ANIMATION_FINISH_EXIT = "animation finish exit";
-    public static final String DATA_IS_FOR_RESULT = "start for result";
-    public static final String DATA_REQUEST_CODE = "request code";
 
     private StateChanger stateChanger = new StateChanger();
     private StateHolder currentStateHolder = new StateHolder();
@@ -87,54 +80,17 @@ public class Juggler implements Navigable, Serializable {
         return b;
     }
 
-/*    @Override
-    public void linearState(State state, TargetBound... targetBounds) {
-        doState(null, Add.linear(state, targetBounds));
-    }
-
-    @Override
-    public void linearState(State state, @Nullable String tag) {
-        doState(null, Add.linear(state, tag));
-    }
-
-    @Override
-    public void deeperState(State state, TargetBound... targetBounds) {
-        doState(null, Add.deeper(state, targetBounds));
-    }
-
-    @Override
-    public void deeperState(State state, String tag) {
-        doState(null, Add.deeper(state, tag));
-    }
-
-    @Override
-    public void clearState(State state) {
-        doState(Remove.all(), Add.deeper(state));
-    }
-
-    @Override
-    public void clearState(State state, String tag) {
-        doState(Remove.all(), Add.deeper(state, tag));
-    }
-
-    @Override
-    public void dig(String tag) {
-        doState(Remove.dig(tag), null);
-    }
-
-    @Override
-    public void digLinearState(String digTag, State state) {
-        doState(Remove.dig(digTag), Add.deeper(state));
-    }
-
-    @Override
-    public void digDeeperState(String tag, State state) {
-        doState(Remove.dig(tag), Add.deeper(state, tag));
-    }*/
-
     @Override
     public void restore() {
         currentStateHolder.set(stateChanger.restore(activity));
+    }
+
+    @Override
+    public void state(@Nullable Change... changes) {
+        if (changes == null || changes.length == 0) {
+            return;
+        }
+        doState(changes);
     }
 
     public void activateCurrentState() {
@@ -144,64 +100,14 @@ public class Juggler implements Navigable, Serializable {
         }
     }
 
-    @Override
-    public void state(@Nullable Remove.Interface remove) {
-        doState(remove, null);
-    }
-
-    @Override
-    public void state(@Nullable Add.Interface add) {
-        doState(null, add);
-    }
-
-    @Override
-    public void state(@Nullable Remove.Interface remove, @Nullable Add.Interface add) {
-        doState(remove, add);
-    }
-
-    private void doState(@Nullable Remove.Interface remove, @Nullable Add.Interface add) {
+    private void doState(@NonNull Change... changes) {
         Bundle bundle = new Bundle();
         State state = currentStateHolder.get();
         if (state != null) {
             state.onDeactivate(activity);
         }
-        Item newItem = null;
-        if (remove != null) {
-            newItem = remove.remove(activity, stateChanger.getItems(), currentStateHolder, bundle);
-        }
-        if (add != null) {
-            newItem = add.add(activity, stateChanger.getItems(), currentStateHolder, bundle);
-        }
-        Intent newActivityIntent = bundle.getParcelable(DATA_NEW_ACTIVITY_INTENT);
-        int enterAnimation = bundle.getInt(DATA_ANIMATION_START_ENTER, 0);
-        int exitAnimation = bundle.getInt(DATA_ANIMATION_START_EXIT, 0);
-        int finishEnterAnimation = bundle.getInt(DATA_ANIMATION_FINISH_ENTER, 0);
-        int finishExitAnimation = bundle.getInt(DATA_ANIMATION_FINISH_EXIT, 0);
-        boolean isForResult = bundle.getBoolean(DATA_IS_FOR_RESULT, false);
-        int requestCode = bundle.getInt(DATA_REQUEST_CODE, 0);
-        if (newActivityIntent != null) {
-            newActivityIntent.putExtra(DATA_ANIMATION_FINISH_ENTER, finishEnterAnimation);
-            newActivityIntent.putExtra(DATA_ANIMATION_FINISH_EXIT, finishExitAnimation);
-            if (isForResult) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && add != null && add instanceof NewActivityAdd && ((NewActivityAdd) add).getActivityOptions() != null) {
-                    //noinspection RestrictedApi
-                    activity.startActivityForResult(newActivityIntent, requestCode, ((NewActivityAdd) add).getActivityOptions());
-                } else {
-                    activity.startActivityForResult(newActivityIntent, requestCode);
-                }
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && add != null && add instanceof NewActivityAdd && ((NewActivityAdd) add).getActivityOptions() != null) {
-                    activity.startActivity(newActivityIntent, ((NewActivityAdd) add).getActivityOptions());
-                } else {
-                    activity.startActivity(newActivityIntent);
-                }
-            }
-            activity.overridePendingTransition(enterAnimation, exitAnimation);
-        }
-        boolean closeCurrentActivity = bundle.getBoolean(DATA_CLOSE_CURRENT_ACTIVITY, false);
-        if (closeCurrentActivity) {
-            activity.finish();
-            activity.overridePendingTransition(finishEnterAnimation, finishExitAnimation);
+        for (Change change : changes) {
+            change.change(activity, stateChanger.getItems(), currentStateHolder, bundle);
         }
     }
 
@@ -210,13 +116,10 @@ public class Juggler implements Navigable, Serializable {
             activity.getSupportFragmentManager().removeOnBackStackChangedListener(onBackStackChangedListener);
         }
         this.activity = activity;
-        onBackStackChangedListener = new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                State state = currentStateHolder.get();
-                if (state != null) {
-                    state.onActivate(Juggler.this.activity);
-                }
+        onBackStackChangedListener = () -> {
+            State state = currentStateHolder.get();
+            if (state != null) {
+                state.onActivate(Juggler.this.activity);
             }
         };
         this.activity.getSupportFragmentManager().addOnBackStackChangedListener(onBackStackChangedListener);

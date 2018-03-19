@@ -7,10 +7,10 @@ import java.util.Stack;
 import me.ilich.juggler.Juggler;
 import me.ilich.juggler.gui.JugglerActivity;
 
-class RemoveLast implements Remove.Interface {
+class RemoveLast implements Change {
 
     @Override
-    public Item remove(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
+    public Item change(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
         final Item oldItem = items.pop();
         final Item newItem;
         if (items.isEmpty()) {

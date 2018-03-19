@@ -89,7 +89,7 @@ public class ItemsListFragment extends JugglerFragment {
                     //navigateTo().state(Add.linear(new ItemDetailsState(item)));
                     State newState = new ItemDetailsState(item);
                     /**
-                     * add elements in State, witch need animate
+                     * change elements in State, witch need animate
                      */
 //                    newState.addSharedElement(holder.textView, String.valueOf(item));
 //                    newState.addSharedElement(holder.imageView, item + "image");

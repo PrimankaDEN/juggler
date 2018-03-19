@@ -8,17 +8,13 @@ import java.util.Stack;
 import me.ilich.juggler.Juggler;
 import me.ilich.juggler.gui.JugglerActivity;
 
-public class RemoveCloseAllActivities implements Remove.Interface {
+import static me.ilich.juggler.Juggler.DATA_INTENT_FLAG;
+
+public class RemoveCloseAllActivities implements Change {
 
     @Override
-    public Item remove(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
-        Intent intent = data.getParcelable(Juggler.DATA_NEW_ACTIVITY_INTENT);
-        if (intent == null) {
-            intent = new Intent();
-        }
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        data.putParcelable(Juggler.DATA_NEW_ACTIVITY_INTENT, intent);
+    public Item change(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle data) {
+        data.putInt(DATA_INTENT_FLAG, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         return null;
     }
-
 }

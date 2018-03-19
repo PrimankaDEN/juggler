@@ -13,7 +13,7 @@ import me.ilich.juggler.Juggler;
 import me.ilich.juggler.Log;
 import me.ilich.juggler.Navigable;
 import me.ilich.juggler.change.Add;
-import me.ilich.juggler.change.Remove;
+import me.ilich.juggler.change.Change;
 import me.ilich.juggler.states.State;
 
 public class JugglerActivity extends AppCompatActivity {
@@ -79,19 +79,9 @@ public class JugglerActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        final Remove.Interface remove;
-        final Add.Interface add;
-        if (CrossActivity.getInstance().hasRemove()) {
-            remove = CrossActivity.getInstance().getRemove();
-        } else {
-            remove = null;
-        }
-        if (CrossActivity.getInstance().hasAdd()) {
-            add = CrossActivity.getInstance().getAdd();
-        } else {
-            add = null;
-        }
-        navigateTo().state(remove, add);
+        Change[] states;
+        states = CrossActivity.getInstance().getLast();
+        navigateTo().state(states);
     }
 
     protected State createState() {

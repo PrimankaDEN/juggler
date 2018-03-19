@@ -2,6 +2,7 @@ package me.ilich.juggler.change;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.AnimRes;
 import android.support.annotation.Nullable;
@@ -12,7 +13,9 @@ import me.ilich.juggler.Juggler;
 import me.ilich.juggler.gui.JugglerActivity;
 import me.ilich.juggler.states.State;
 
-public class NewActivityAdd implements Add.Interface {
+import static me.ilich.juggler.Juggler.DATA_INTENT_FLAG;
+
+public class NewActivityAdd implements Change {
 
     public static NewActivityAdd forResult(State state, Class<? extends JugglerActivity> activityClass, int requestCode) {
         return new NewActivityAdd(state, activityClass, 0, 0, true, requestCode);
@@ -71,28 +74,34 @@ public class NewActivityAdd implements Add.Interface {
         this.requestCode = requestCode;
     }
 
-    @Nullable
-    public Bundle getActivityOptions() {
-        return activityOptions;
-    }
-
     @Override
-    public Item add(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle bundle) {
-        Intent intent = bundle.getParcelable(Juggler.DATA_NEW_ACTIVITY_INTENT);
-        if (intent == null) {
-            intent = new Intent();
+    public Item change(JugglerActivity activity, Stack<Item> items, Juggler.StateHolder currentStateHolder, Bundle bundle) {
+        Intent intent = new Intent();
+        if (bundle.containsKey(DATA_INTENT_FLAG)) {
+            intent.setFlags(bundle.getInt(DATA_INTENT_FLAG));
         }
         if (activityClass == null) {
             intent.setComponent(new ComponentName(activity, JugglerActivity.class));
         } else {
             intent.setComponent(new ComponentName(activity, activityClass));
         }
-        bundle.putParcelable(Juggler.DATA_NEW_ACTIVITY_INTENT, intent);
-        bundle.putInt(Juggler.DATA_ANIMATION_START_ENTER, enterAnimationId);
-        bundle.putInt(Juggler.DATA_ANIMATION_START_EXIT, exitAnimationId);
-        bundle.putBoolean(Juggler.DATA_IS_FOR_RESULT, isForResult);
-        bundle.putInt(Juggler.DATA_REQUEST_CODE, requestCode);
         JugglerActivity.state(activity, state, intent);
+
+        if (isForResult) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && activityOptions != null) {
+                //noinspection RestrictedApi
+                activity.startActivityForResult(intent, requestCode, activityOptions);
+            } else {
+                activity.startActivityForResult(intent, requestCode);
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && activityOptions != null) {
+                activity.startActivity(intent, activityOptions);
+            } else {
+                activity.startActivity(intent);
+            }
+        }
+        activity.overridePendingTransition(enterAnimationId, exitAnimationId);
         return null;
     }
 
